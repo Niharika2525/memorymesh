@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MemoryMesh — Voice-First Autonomous Multi-Agent System</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button id="mobileMenuBtn" class="icon-btn" aria-label="Toggle Navigation">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="brand-title">
+        <span class="gradient-text">MemoryMesh</span>
+      </div>
+      <div id="mobileHealthDot" class="status-dot dot-unknown" title="Status checking..."></div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"></path>
+            <path d="M9 21h6"></path>
+            <circle cx="12" cy="9" r="2"></circle>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h2>MemoryMesh</h2>
+          <span class="brand-subtitle">Autonomous Multi-Agent AI</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-target="overviewView">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-target="agentView">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Agent Workspace</span>
+        </button>
+        <button class="nav-item" data-target="memoryView">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          <span>Persistent Memory</span>
+        </button>
+        <button class="nav-item" data-target="voiceView">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+          <span>Voice Interface</span>
+        </button>
+        <button class="nav-item" data-target="healthView">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <span>System Health</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="session-stats-card">
+          <div class="stat-row">
+            <span class="stat-label">Session Tasks:</span>
+            <span id="sessionTasksCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Backend:</span>
+            <span id="sidebarBackendStatus" class="badge badge-unknown">Unknown</span>
+          </div>
+        </div>
+        <div class="api-target">
+          <span class="api-label">Base URL:</span>
+          <code id="sidebarApiUrl" class="api-url-text">http://127.0.0.1:8000</code>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation Bar -->
+      <header class="top-nav">
+        <div class="view-title-container">
+          <h1 id="currentViewTitle">Overview</h1>
+          <p id="currentViewSubtitle" class="text-muted">Real-time Autonomous Multi-Agent Operations</p>
+        </div>
+
+        <div class="top-actions">
+          <!-- Real Status Pills -->
+          <div class="status-pills">
+            <div id="pillBackend" class="status-pill pill-unknown" title="FastAPI Backend Status">
+              <span class="dot"></span>
+              <span class="pill-label">API</span>
+              <span class="pill-val">Unknown</span>
+            </div>
+            <div id="pillQdrant" class="status-pill pill-unknown" title="Qdrant Vector DB Status">
+              <span class="dot"></span>
+              <span class="pill-label">Qdrant</span>
+              <span class="pill-val">Unknown</span>
+            </div>
+            <div id="pillOmi" class="status-pill pill-unknown" title="Omi Voice Listener Status">
+              <span class="dot"></span>
+              <span class="pill-label">Omi</span>
+              <span class="pill-val">Unknown</span>
+            </div>
+          </div>
+
+          <button id="quickRefreshBtn" class="icon-btn" title="Refresh System Status">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW 1: OVERVIEW -->
+      <section id="overviewView" class="view-panel active">
+        <!-- Hero Overview Banner -->
+        <div class="hero-banner">
+          <div class="hero-content">
+            <div class="badge badge-accent">Hackathon Edition — Stop Prompting. Code Solo Agents.</div>
+            <h2 class="hero-title">Voice-First Autonomous Multi-Agent Mesh</h2>
+            <p class="hero-desc">
+              Voice spoken tasks are transcribed via <strong>Omi</strong>, parsed by a <strong>Lyzr-powered Orchestrator</strong>,
+              augmented with persistent semantic memory from <strong>Qdrant</strong>, and executed through collaborative specialized agents.
+            </p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="window.navigateTo('agentView')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Launch Agent Task
+            </button>
+            <button class="btn btn-secondary" onclick="window.navigateTo('voiceView')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path></svg>
+              Speak Voice Command
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Tasks Executed</span>
+              <div class="metric-icon icon-violet">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              </div>
+            </div>
+            <div id="metricSessionTasks" class="metric-value">0</div>
+            <div class="metric-footer text-muted">Current browser session</div>
+          </div>
+
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Verified Rate</span>
+              <div class="metric-icon icon-emerald">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+            </div>
+            <div id="metricVerifiedRate" class="metric-value">100%</div>
+            <div class="metric-footer text-muted" id="metricVerifiedCount">0 verified tasks</div>
+          </div>
+
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Vector Memory</span>
+              <div class="metric-icon icon-blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path></svg>
+              </div>
+            </div>
+            <div id="metricMemoryStatus" class="metric-value text-sm">Checking...</div>
+            <div class="metric-footer text-muted" id="metricMemoryCollection">Collection: -</div>
+          </div>
+
+          <div class="card metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Agent Roles</span>
+              <div class="metric-icon icon-amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </div>
+            </div>
+            <div class="metric-value">6 Mesh</div>
+            <div class="metric-footer text-muted">Orchestrator, Plan, Memory, Research, Action, Verifier</div>
+          </div>
+        </div>
+
+        <!-- Agent Workflow Visualization -->
+        <div class="card workflow-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Multi-Agent Workflow Architecture</h3>
+              <p class="card-subtitle text-muted">Live dataflow pipeline from voice ingestion to memory recall and verification</p>
+            </div>
+            <span class="badge badge-outline">Reactive Mesh</span>
+          </div>
+
+          <div class="workflow-diagram">
+            <div class="wf-node" id="wfNodeVoice">
+              <div class="wf-icon">🎙️</div>
+              <div class="wf-title">Omi Voice</div>
+              <div class="wf-sub">Real-time / Webhook</div>
+            </div>
+            <div class="wf-connector">➔</div>
+            <div class="wf-node wf-highlight" id="wfNodeOrchestrator">
+              <div class="wf-icon">⚡</div>
+              <div class="wf-title">Orchestrator</div>
+              <div class="wf-sub">Lyzr Automata</div>
+            </div>
+            <div class="wf-connector">➔</div>
+            <div class="wf-submesh">
+              <div class="wf-subnode" id="wfNodeMemory">
+                <span class="dot"></span>
+                <span>Memory Agent <span class="text-xs text-muted">(Qdrant)</span></span>
+              </div>
+              <div class="wf-subnode" id="wfNodePlanner">
+                <span class="dot"></span>
+                <span>Planner Agent</span>
+              </div>
+              <div class="wf-subnode" id="wfNodeResearch">
+                <span class="dot"></span>
+                <span>Research Agent</span>
+              </div>
+              <div class="wf-subnode" id="wfNodeAction">
+                <span class="dot"></span>
+                <span>Action Agent</span>
+              </div>
+              <div class="wf-subnode" id="wfNodeVerifier">
+                <span class="dot"></span>
+                <span>Verifier Agent</span>
+              </div>
+            </div>
+            <div class="wf-connector">➔</div>
+            <div class="wf-node" id="wfNodeResponse">
+              <div class="wf-icon">💬</div>
+              <div class="wf-title">Synthesized Output</div>
+              <div class="wf-sub">Vector Re-Persisted</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Task Runner Panel -->
+        <div class="card quick-runner-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Quick Task Execution</h3>
+              <p class="card-subtitle text-muted">Submit a natural-language command directly to the multi-agent mesh</p>
+            </div>
+          </div>
+
+          <form id="overviewTaskForm" class="quick-task-form">
+            <div class="input-row">
+              <input type="text" id="overviewTaskInput" class="form-input" placeholder="e.g. Note that the project submission deadline is Friday 5 PM" required>
+              <button type="submit" id="overviewSubmitBtn" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Execute
+              </button>
+            </div>
+            <div class="preset-prompts">
+              <span class="text-xs text-muted">Quick presets:</span>
+              <button type="button" class="chip-preset" data-text="Remind me to test Qdrant memory persistence">Memory Test</button>
+              <button type="button" class="chip-preset" data-text="Calculate 128 * 45 / 2">Calculate Math</button>
+              <button type="button" class="chip-preset" data-text="Plan an end-to-end multi-agent evaluation routine">Plan Evaluation</button>
+              <button type="button" class="chip-preset" data-text="Check if system is healthy and aligned">Health Verification</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Recent Task Activity -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Recent Session Activity</h3>
+              <p class="card-subtitle text-muted">Real-time log of tasks processed during this browser session</p>
+            </div>
+            <button id="clearActivityBtn" class="btn btn-sm btn-ghost">Clear Log</button>
+          </div>
+
+          <div id="recentActivityContainer" class="recent-activity-list">
+            <!-- Populated via JavaScript -->
+            <div class="empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <p class="empty-title">No tasks executed yet</p>
+              <p class="empty-subtitle text-muted">Enter a task above or speak a voice command to see live multi-agent execution results.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: AGENT WORKSPACE -->
+      <section id="agentView" class="view-panel">
+        <div class="workspace-grid">
+          <!-- Left Column: Task Input Form -->
+          <div class="card task-input-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Submit Agent Task</h3>
+                <p class="card-subtitle text-muted">Dispatches to <code>POST /api/agent/run</code></p>
+              </div>
+            </div>
+
+            <form id="agentTaskForm" class="agent-form">
+              <div class="form-group">
+                <label for="agentTaskPrompt">Natural Language Task or Question</label>
+                <textarea id="agentTaskPrompt" class="form-textarea" rows="4" placeholder="What should the multi-agent mesh research, execute, or remember?" required></textarea>
+                <div class="form-hint text-muted">Supports research queries, calculations, plans, and memory prompts.</div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="agentSpeaker">Speaker / User Identity</label>
+                  <input type="text" id="agentSpeaker" class="form-input" value="user" placeholder="user name">
+                </div>
+                <div class="form-group">
+                  <label for="agentSource">Originating Source</label>
+                  <select id="agentSource" class="form-select">
+                    <option value="dashboard" selected>dashboard</option>
+                    <option value="api">api</option>
+                    <option value="voice">voice</option>
+                    <option value="webhook">webhook</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="agentAutoPersist" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+                <div class="toggle-label-group">
+                  <span class="toggle-title">Auto-persist outcome to Qdrant memory</span>
+                  <span class="text-xs text-muted">Writes outcome vector to persistent memory for future semantic recall</span>
+                </div>
+              </div>
+
+              <button type="submit" id="agentSubmitBtn" class="btn btn-primary btn-block">
+                <span class="btn-text">Execute Multi-Agent Mesh</span>
+                <span class="btn-spinner hidden"></span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Right Column: Interactive Execution Inspector -->
+          <div class="card execution-results-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Execution Result Inspector</h3>
+                <p class="card-subtitle text-muted" id="inspectorExecutionMeta">Awaiting task submission</p>
+              </div>
+              <div id="inspectorBadges" class="inspector-badges"></div>
+            </div>
+
+            <div id="agentResultsContainer" class="agent-results-body">
+              <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <p class="empty-title">Ready for Execution</p>
+                <p class="empty-subtitle text-muted">Submit a task to see full agent traces: Plan, Research, Action, Verifier, and Qdrant memory persistence.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: PERSISTENT MEMORY EXPLORER -->
+      <section id="memoryView" class="view-panel">
+        <div class="memory-grid">
+          <!-- Left Column: Search & Store Tools -->
+          <div class="memory-controls">
+            <!-- Semantic Search Card -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Semantic Vector Search</h3>
+                  <p class="card-subtitle text-muted">Queries <code>POST /api/memory/search</code></p>
+                </div>
+              </div>
+
+              <form id="memorySearchForm" class="memory-form">
+                <div class="form-group">
+                  <label for="searchQueryTextInput">Query Text for Embedding</label>
+                  <div class="input-with-button">
+                    <input type="text" id="searchQueryTextInput" class="form-input" placeholder="e.g. hackathon project submission deadline">
+                    <button type="button" id="generateSearchVectorBtn" class="btn btn-secondary btn-sm" title="Generate vector using deterministic SHA-256 embedder">
+                      Auto-Embed
+                    </button>
+                  </div>
+                  <div class="form-hint text-xs text-muted">Generates a normalized embedding matching backend <code>LLMService</code>.</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="searchVectorInput">Query Vector Embedding (comma-separated float array)</label>
+                  <textarea id="searchVectorInput" class="form-textarea code-font" rows="2" placeholder="[0.1, 0.2, 0.3, ...]" required></textarea>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="searchLimit">Max Results (Limit)</label>
+                    <input type="number" id="searchLimit" class="form-input" value="5" min="1" max="20">
+                  </div>
+                  <div class="form-group">
+                    <label for="searchScoreThreshold">Min Score Threshold</label>
+                    <input type="number" id="searchScoreThreshold" class="form-input" placeholder="e.g. 0.0" step="0.05" min="0" max="1">
+                  </div>
+                </div>
+
+                <div class="vector-presets">
+                  <span class="text-xs text-muted">Quick vectors:</span>
+                  <button type="button" class="chip-preset" id="preset4dVectorBtn">4D Unit Test [1,0,0,0]</button>
+                  <button type="button" class="chip-preset" id="presetRandomEmbedBtn">Sample Text Vector</button>
+                </div>
+
+                <button type="submit" id="searchMemorySubmitBtn" class="btn btn-primary btn-block">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  Search Memories
+                </button>
+              </form>
+            </div>
+
+            <!-- Store New Memory Card -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Store Memory Point</h3>
+                  <p class="card-subtitle text-muted">Calls <code>POST /api/memory/store</code></p>
+                </div>
+              </div>
+
+              <form id="memoryStoreForm" class="memory-form">
+                <div class="form-group">
+                  <label for="storeContentInput">Memory Content Text</label>
+                  <textarea id="storeContentInput" class="form-textarea" rows="2" placeholder="e.g. User prefers morning standup calls at 9:30 AM" required></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="storeVectorInput">Vector Embedding</label>
+                  <div class="input-with-button">
+                    <textarea id="storeVectorInput" class="form-textarea code-font" rows="2" placeholder="[0.1, 0.2, ...]" required></textarea>
+                  </div>
+                  <button type="button" id="generateStoreVectorBtn" class="btn btn-sm btn-secondary mt-1">
+                    Auto-Generate Embedding from Content
+                  </button>
+                </div>
+
+                <div class="form-group">
+                  <label for="storeCustomId">Custom ID (Optional UUID or slug)</label>
+                  <input type="text" id="storeCustomId" class="form-input" placeholder="Leave blank for auto UUID">
+                </div>
+
+                <div class="form-group">
+                  <label for="storeMetadataJson">Metadata (JSON format)</label>
+                  <textarea id="storeMetadataJson" class="form-textarea code-font" rows="2">{"source": "dashboard", "category": "user_preference"}</textarea>
+                </div>
+
+                <button type="submit" id="storeMemorySubmitBtn" class="btn btn-secondary btn-block">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                  Store Memory in Qdrant
+                </button>
+              </form>
+            </div>
+
+            <!-- Lookup Single Point Card -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Fetch Point by ID</h3>
+                  <p class="card-subtitle text-muted">Calls <code>GET /api/memory/{id}</code></p>
+                </div>
+              </div>
+              <div class="input-row">
+                <input type="text" id="fetchMemoryIdInput" class="form-input" placeholder="Memory Point ID (UUID)">
+                <button type="button" id="fetchMemoryIdBtn" class="btn btn-secondary">Fetch</button>
+              </div>
+            </div>
+
+            <!-- API Contract Gap Documentation Card -->
+            <div class="card info-callout-card">
+              <div class="callout-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <span class="callout-title">API Contract Note</span>
+              </div>
+              <p class="text-xs text-muted">
+                The existing backend schema (<code>MemoryStoreRequest</code> and <code>MemorySearchRequest</code>) strictly requires client-provided <code>vector: List[float]</code> embeddings.
+                To streamline testing, this dashboard includes a client-side SHA-256 embedder matching the backend's deterministic fallback algorithm in <code>LLMService.generate_embedding()</code>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column: Results & Search Cards -->
+          <div class="memory-results-pane">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Retrieved Memories & Agent Context</h3>
+                  <p class="card-subtitle text-muted" id="memoryResultsSubtitle">Execute a search or fetch by ID to view records</p>
+                </div>
+                <span id="memoryCountBadge" class="badge badge-accent">0 Results</span>
+              </div>
+
+              <!-- Formatted Context Text Preview -->
+              <div id="memoryContextTextWrapper" class="context-preview-box hidden">
+                <div class="context-preview-header">
+                  <span class="text-xs text-muted uppercase">Agent Prompt Injection Context</span>
+                  <button type="button" id="copyContextBtn" class="btn btn-xs btn-ghost">Copy</button>
+                </div>
+                <pre id="memoryContextText" class="context-text-pre"></pre>
+              </div>
+
+              <!-- Memory List Cards -->
+              <div id="memoryCardsList" class="memory-cards-container">
+                <div class="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                  <p class="empty-title">No Memories Loaded</p>
+                  <p class="empty-subtitle text-muted">Perform a semantic vector search or query a point by ID to inspect stored Qdrant vectors and metadata.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: VOICE INTERFACE -->
+      <section id="voiceView" class="view-panel">
+        <div class="voice-grid">
+          <!-- Voice Capture Console -->
+          <div class="card voice-console-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Browser Voice Workspace</h3>
+                <p class="card-subtitle text-muted">Local speech capture routed to <code>POST /api/omi/voice</code></p>
+              </div>
+              <span id="speechSupportBadge" class="badge badge-outline">Checking Web Speech API...</span>
+            </div>
+
+            <!-- Big Mic Button & Visualizer -->
+            <div class="voice-capture-stage">
+              <div class="mic-visualizer-wrap">
+                <div id="micRing1" class="mic-pulse-ring"></div>
+                <div id="micRing2" class="mic-pulse-ring delay-1"></div>
+                <button type="button" id="micCaptureBtn" class="mic-circle-btn" aria-label="Start Voice Recording">
+                  <svg id="micIcon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+              </div>
+              <div id="voiceStatusLabel" class="voice-status-text">Click microphone to speak</div>
+            </div>
+
+            <!-- Live Transcript Preview -->
+            <div class="form-group">
+              <div class="transcript-header">
+                <label for="voiceTranscriptText">Voice Transcript Preview</label>
+                <span class="text-xs text-muted">Editable before execution</span>
+              </div>
+              <textarea id="voiceTranscriptText" class="form-textarea" rows="4" placeholder="Your spoken words will appear here in real time..."></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="voiceSpeakerInput">Speaker Identity</label>
+                <input type="text" id="voiceSpeakerInput" class="form-input" value="user">
+              </div>
+              <div class="form-group">
+                <label for="voiceSessionId">Session ID (Optional)</label>
+                <input type="text" id="voiceSessionId" class="form-input" placeholder="e.g. omi-session-1">
+              </div>
+            </div>
+
+            <!-- Confirmation & Execution Button -->
+            <div class="voice-actions">
+              <button type="button" id="submitVoiceTranscriptBtn" class="btn btn-primary btn-block" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Confirm & Submit to Multi-Agent Mesh
+              </button>
+              <div class="form-hint text-xs text-center text-muted">
+                Requires user confirmation before execution. Never runs automatically.
+              </div>
+            </div>
+
+            <!-- Spoken Output Card -->
+            <div id="speechOutputBox" class="speech-output-box hidden">
+              <div class="speech-output-header">
+                <span class="text-xs text-accent">Synthesized Agent Response</span>
+                <button type="button" id="ttsSpeakBtn" class="btn btn-xs btn-secondary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                  Read Aloud
+                </button>
+              </div>
+              <p id="speechOutputContent" class="speech-content-text"></p>
+            </div>
+          </div>
+
+          <!-- Omi Hardware & Webhook Specs Card -->
+          <div class="card omi-hardware-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Omi Wearable Integration</h3>
+                <p class="card-subtitle text-muted">Hardware Webhooks & WebSocket Stream</p>
+              </div>
+              <span id="omiServiceStatusBadge" class="badge badge-unknown">Checking...</span>
+            </div>
+
+            <!-- Hardware Status Info -->
+            <div class="hardware-info-panel">
+              <div class="info-row">
+                <span class="label">Listener Service:</span>
+                <span id="omiServiceName" class="value code-font">-</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Configured App ID:</span>
+                <span id="omiHasAppId" class="value badge badge-outline">-</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Webhook Endpoint:</span>
+                <span class="value code-font">POST /api/omi/webhook</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Real-time Stream:</span>
+                <span class="value code-font">WS /api/omi/stream</span>
+              </div>
+            </div>
+
+            <!-- Webhook Payload Simulator -->
+            <div class="webhook-simulator-section">
+              <h4 class="text-sm font-semibold">Simulate Omi Cloud Webhook Event</h4>
+              <p class="text-xs text-muted mb-2">Simulate incoming JSON events dispatched from physical Omi neckband hardware</p>
+              
+              <div class="form-group">
+                <textarea id="webhookPayloadEditor" class="form-textarea code-font" rows="5">
+{
+  "event": "transcript",
+  "data": {
+    "transcript": "Note that our next sync is at 4pm tomorrow",
+    "speaker": "ravel",
+    "session_id": "omi-device-alpha"
+  }
+}
+                </textarea>
+              </div>
+
+              <button type="button" id="sendWebhookSimBtn" class="btn btn-secondary btn-block">
+                Dispatch Omi Webhook Payload
+              </button>
+            </div>
+
+            <!-- Hardware Distinction Notice -->
+            <div class="notice-box">
+              <strong>Hardware Notice:</strong> Browser microphone input operates as a client-side audio tester. Physical Omi wearable devices stream Bluetooth packets to the Omi mobile app, which routes webhook transcript events directly to your backend endpoint.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: SYSTEM HEALTH -->
+      <section id="healthView" class="view-panel">
+        <div class="health-header-bar">
+          <div>
+            <h3 class="text-lg font-semibold">System Diagnostics & Cluster Health</h3>
+            <p class="text-xs text-muted" id="healthLastChecked">Last checked: Never</p>
+          </div>
+          <button id="healthRefreshAllBtn" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Refresh All Endpoints
+          </button>
+        </div>
+
+        <!-- Health Diagnostic Cards Grid -->
+        <div class="health-grid">
+          <!-- Backend FastAPI Card -->
+          <div class="card health-card" id="cardHealthBackend">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <span class="health-indicator-dot dot-unknown"></span>
+                <span>FastAPI Backend</span>
+              </div>
+              <span class="badge badge-unknown health-status-text">Checking</span>
+            </div>
+            <div class="health-card-body">
+              <div class="endpoint-tag">GET /health</div>
+              <div class="health-kv">
+                <span class="kv-key">App:</span>
+                <span class="kv-val" id="healthBackendApp">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Version:</span>
+                <span class="kv-val" id="healthBackendVersion">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Environment:</span>
+                <span class="kv-val" id="healthBackendEnv">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Qdrant Cluster Card -->
+          <div class="card health-card" id="cardHealthQdrant">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <span class="health-indicator-dot dot-unknown"></span>
+                <span>Qdrant Vector DB</span>
+              </div>
+              <span class="badge badge-unknown health-status-text">Checking</span>
+            </div>
+            <div class="health-card-body">
+              <div class="endpoint-tag">GET /health/qdrant</div>
+              <div class="health-kv">
+                <span class="kv-key">Cluster URL:</span>
+                <span class="kv-val code-font text-xs" id="healthQdrantUrl">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Collection:</span>
+                <span class="kv-val" id="healthQdrantCollection">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Collection Exists:</span>
+                <span class="kv-val" id="healthQdrantCollectionExists">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Total Collections:</span>
+                <span class="kv-val" id="healthQdrantTotalCount">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agent Mesh Card -->
+          <div class="card health-card" id="cardHealthAgents">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <span class="health-indicator-dot dot-unknown"></span>
+                <span>Agent Orchestrator</span>
+              </div>
+              <span class="badge badge-unknown health-status-text">Checking</span>
+            </div>
+            <div class="health-card-body">
+              <div class="endpoint-tag">GET /api/agent/status</div>
+              <div class="health-kv">
+                <span class="kv-key">Mesh Status:</span>
+                <span class="kv-val" id="healthAgentStatus">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Active Roles:</span>
+                <span class="kv-val" id="healthAgentList">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Memory Connected:</span>
+                <span class="kv-val" id="healthAgentMemoryConnected">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lyzr Agent Studio Card -->
+          <div class="card health-card" id="cardHealthLyzr">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <span class="health-indicator-dot dot-unknown"></span>
+                <span>Lyzr Agent Studio</span>
+              </div>
+              <span class="badge badge-unknown health-status-text">Checking</span>
+            </div>
+            <div class="health-card-body">
+              <div class="endpoint-tag">GET /health/lyzr</div>
+              <div class="health-kv">
+                <span class="kv-key">Cloud API:</span>
+                <span class="kv-val" id="healthLyzrConfigured">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Agent ID:</span>
+                <span class="kv-val code-font text-xs" id="healthLyzrAgentId">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Orchestrator:</span>
+                <span class="kv-val">Lyzr Automata</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Omi Voice Listener Card -->
+          <div class="card health-card" id="cardHealthOmi">
+            <div class="health-card-header">
+              <div class="health-card-title">
+                <span class="health-indicator-dot dot-unknown"></span>
+                <span>Omi Voice Listener</span>
+              </div>
+              <span class="badge badge-unknown health-status-text">Checking</span>
+            </div>
+            <div class="health-card-body">
+              <div class="endpoint-tag">GET /api/omi/status</div>
+              <div class="health-kv">
+                <span class="kv-key">Listener Status:</span>
+                <span class="kv-val" id="healthOmiStatus">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">Service:</span>
+                <span class="kv-val" id="healthOmiService">-</span>
+              </div>
+              <div class="health-kv">
+                <span class="kv-key">App Secret / ID:</span>
+                <span class="kv-val" id="healthOmiAppId">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Base URL Config Card -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Backend API Base URL Configuration</h3>
+              <p class="card-subtitle text-muted">Configurable endpoint for local development or remote server testing</p>
+            </div>
+          </div>
+          <div class="base-url-form">
+            <div class="form-group flex-1">
+              <label for="customApiBaseUrl">API Base URL</label>
+              <input type="url" id="customApiBaseUrl" class="form-input" value="http://127.0.0.1:8000">
+            </div>
+            <div class="base-url-actions">
+              <button type="button" id="saveApiBaseUrlBtn" class="btn btn-primary">Save & Re-test</button>
+              <button type="button" id="resetApiBaseUrlBtn" class="btn btn-secondary">Reset to Default</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Detailed Modal for Task Inspection -->
+  <div id="taskModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTaskTitle" class="modal-title">Task Details</h3>
+        <button id="modalCloseBtn" class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div id="modalTaskBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
